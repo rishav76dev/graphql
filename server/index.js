@@ -12,11 +12,46 @@ async function startServer(){
                 id: ID!
                 title: String!
                 completed: Boolean
+                user: User
             }
+
+            type User {
+                id: ID!
+                name: String!
+                username: String!
+                email: String!
+                phone: String!
+                website: String!
+            }
+
             type Query {
                 getTodos: [Todo]
+                getAllUsers: [User]
+                getUser(id: ID!): User
             }`,
-        resolvers: {}
+        resolvers: {
+            Todo: {
+                    user: async (todo) => {
+                        await axios.get (
+                            `https://jsonplaceholder.typicode.com/users/${todo.id}`
+                        )
+                    }
+                },
+            Query: {
+                // getTodos:() => [{
+                //     id: 1,
+                //     title: 'something something',
+                //     completed: false
+                // }]
+
+                 getTodos: async() => (await axios.get('https://jsonplaceholder.typicode.com/todos')).data,
+                 
+                 getAllUsers: async() => (await axios.get('https://jsonplaceholder.typicode.com/users')).data,
+
+                 getUser: async(parent, { id }) =>  (await axios.get(`https://jsonplaceholder.typicode.com/users/${id}`)).data,
+
+            }
+        }
     });
 
     app.use(bodyParser.json())
